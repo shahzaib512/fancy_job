@@ -26,13 +26,27 @@ def write_number(num):
         f.write(str(num))
 
 def git_commit():
-    # Stage the changes
-    subprocess.run(['git', 'add', 'number.txt'])
-    
-    # Create commit with current date
-    date = datetime.now().strftime('%Y-%m-%d')
-    commit_message = f"Update number: {date}"
-    subprocess.run(['git', 'commit', '-m', commit_message])
+    try:
+        # Stage the changes
+        result = subprocess.run(['git', 'add', 'number.txt'], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"Git add failed: {result.stderr}")
+        
+        # Create commit with current date
+        date = datetime.now().strftime('%Y-%m-%d')
+        commit_message = f"Update number: {date}"
+        result = subprocess.run(['git', 'commit', '-m', commit_message], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"Git commit failed: {result.stderr}")
+        
+        # Push to GitHub
+        result = subprocess.run(['git', 'push', 'origin', 'main'], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"Git push failed: {result.stderr}")
+            
+    except Exception as e:
+        print(f"Git operation failed: {str(e)}")
+        raise
 
 def main():
     try:
